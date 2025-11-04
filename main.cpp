@@ -1,6 +1,4 @@
-//
-// Created by Manju Muralidharan on 10/19/25.
-//
+
 #include <iostream>
 #include <fstream>
 #include <stack>
@@ -90,23 +88,60 @@ int createLeafNodes(int freq[]) {
 // Step 3: Build the encoding tree using heap operations
 int buildEncodingTree(int nextFree) {
     // TODO:
-    // 1. Create a MinHeap object.
-    // 2. Push all leaf node indices into the heap.
-    // 3. While the heap size is greater than 1:
-    //    - Pop two smallest nodes
-    //    - Create a new parent node with combined weight
-    //    - Set left/right pointers
-    //    - Push new parent index back into the heap
-    // 4. Return the index of the last remaining node (root)
-    return -1; // placeholder
+    MinHeap h;
+    if (nextFree == 0) {
+        cerr << "There are no encodable characters were found in input.\n";
+        exit(1);
+    }
+    for (int i = 0; i < nextFree; ++i) {
+        h.push(i, weightArr);
+    }
+    int curr = nextFree;
+    while (h.size > 1) {
+        int a = h.pop(weightArr);
+        int b = h.pop(weightArr);
+
+        if (curr >= MAX_NODES) {
+            cerr << "Node capacity exceeded while building tree.\n";
+            exit(1);
+        }
+        leftArr[curr]   = a;
+        rightArr[curr]  = b;
+        weightArr[curr] = weightArr[a] + weightArr[b];
+        charArr[curr]   = '\0';
+
+        h.push(curr, weightArr);
+        curr++;
+    }
+    int root = h.pop(weightArr);
+    return root;
 }
 
 // Step 4: Use an STL stack to generate codes
 void generateCodes(int root, string codes[]) {
     // TODO:
-    // Use stack<pair<int, string>> to simulate DFS traversal.
-    // Left edge adds '0', right edge adds '1'.
-    // Record code when a leaf node is reached.
+    if (root < 0) return;
+
+    struct Frame { int node; string path; };
+    stack<Frame> st;
+    st.push({root, ""});
+
+    while (!st.empty()) {
+        Frame f = st.top(); st.pop();
+        int u = f.node;
+
+        bool isLeaf = (leftArr[u] == -1 && rightArr[u] == -1);
+
+        if (isLeaf) {
+            char c = charArr[u];
+            if (c >= 'a' && c <= 'z') {
+                codes[c - 'a'] = (f.path.empty() ? "0" : f.path);
+            }
+        } else {
+            if (rightArr[u] != -1) st.push({ rightArr[u], f.path + "1" });
+            if (leftArr[u]  != -1) st.push({ leftArr[u],  f.path + "0" });
+        }
+    }
 }
 
 // Step 5: Print table and encoded message
