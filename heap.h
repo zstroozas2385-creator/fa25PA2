@@ -1,3 +1,4 @@
+// Author: Zach Stroozas
 
 #ifndef HEAP_H
 #define HEAP_H
